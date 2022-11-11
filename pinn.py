@@ -1,11 +1,37 @@
 
+# Imports
+import torch
+import torch.nn as nn
+import torch.autograd as autograd
+
+
+class PINN(torch.nn.Module):
+
+    def __init__(self, layers):
+        
+        super().__init__() # Instantiate a torch.nn
+
+        "Layers"
+        self.layers = layers
+
+        "Activation function"
+        self.activation = nn.Tanh() # Up until now it works with Tanh, we can change it to relu or something else
+
+        "Loss Function"
+        self.loss_function = nn.MSELoss(reduction = "mean") # This just sums the square of diffferences and divdes. Coudl ahve wrote it myself.
+
+        "Linear layers"
+        self.linears = nn.ModuleList([nn.Linear(layers[i], layers[i+1]) for i in range(len(layers)-1)])
+        # If I want I can xavier initialize everything here
+
+
 # Copiar de aca abajo todo lo que sirva, pero adaptandolo a una PDE con dos coordenadas.
 # 3 coordenadas (dos espaciales y una temporal) queda para el futuro.
 
 
 # We have the data, we will now define our neural network using the torch.nn class
 
-class PINN(torch.nn.Module): # Defino mi clase Pinn como una heredera de la neural network de pytorch
+class PINN_vieja(torch.nn.Module): # Defino mi clase Pinn como una heredera de la neural network de pytorch
     def __init__(self, layers):
         super().__init__() #instanciamos una torch.nn 
 
