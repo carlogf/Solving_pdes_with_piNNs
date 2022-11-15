@@ -22,7 +22,67 @@ class PINN(torch.nn.Module):
 
         "Linear layers"
         self.linears = nn.ModuleList([nn.Linear(layers[i], layers[i+1]) for i in range(len(layers)-1)])
-        # If I want I can xavier initialize everything here
+        # In the documentation it says we can set the weights and bias here, Camilo said the same thing, but I didn't do it
+
+        "Xavier normal initialization"
+        for i in range(len(layers)-2): 
+            nn.init.xavier_normal_(self.linears[i].weights.data)
+            nn.init.zeros_(self.linears[i].bias.data)
+
+
+    "Forward Pass"
+    def forward(self, x):
+        # Check if x is NumPy Array or Tensor
+        if not torch.is_tensor(x):
+            x = torch.from_numpy(x)
+        a = x.float() #I dont understand why the .float()
+
+        for i in range(len(self.layers)-2): # number of inner hidden layers
+            z = self.linears[i](a)
+            a = self.activation(z)
+        
+        # Last layer
+        a = self.linears[-1](a)
+
+        return a
+
+    "Loss Functions"
+    # En el sciann lo que hace es pasar una lista de loss functions y 
+    # los puntos es una lista tambien que se corresponde
+
+    # Por ahora lo hago igual que antes, creo que en el futuro lo que tengo que hacer
+    # Es una unica loss function y hacerme cargo a mano de como le doy los datos.
+
+    # La responsabilidad de la red es ser la red. La responsabilidad de la loss function es de la loss function
+
+    # Dicho esto
+    def loss_ic(self, X, y_ic_trues):
+        # Toma tensores X de la forma (x,0), y evalua y compara
+        loss_ic = self.loss_function(self.forward(X), y_ic_trues)
+        return loss_ic
+
+
+    def loss_bc(self, X, y_bc_trues):
+        #toma tensores X de la forma (-1,t) y (1,t) y los pasa por la red y compara. Hace lo mismo que la anterior
+        loss_bc = self.loss_function(self.forward(X), y_bc_trues)
+        return loss_bc
+
+    def loss_pde(self, X):
+        g = x.clone() #good practice
+        g.float().to(device)
+        
+        # Start recording grads on g:
+        g.requires_grad = True
+
+        fnn = self.forward(g)
+
+        # Calculate derivatives
+
+        # Gradient \nabla fnn.
+        D_fnn = autograd.grad(fnn, g, torch.ones([g.shape[0],1]).to(device), retain_graph = True)
+
+        # Differential Matrix
+        DD_fnn = autograd.grad(D_fnn)
 
 
 # Copiar de aca abajo todo lo que sirva, pero adaptandolo a una PDE con dos coordenadas.
