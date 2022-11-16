@@ -76,10 +76,14 @@ class PINN(torch.nn.Module):
 
         fnn = self.forward(g)
 
-        # Calculate derivatives
+        # Calculate derivatives for each data input
+
+        for xt in X:
+            inp = xt.clone()
+            inp.requires_grad = True 
 
         # Gradient \nabla fnn.
-        D_fnn = autograd.grad(fnn, g, torch.ones([g.shape[0],1]).to(device), retain_graph = True)
+            grad_fnn = autograd.functional.jacobian(self.forward,)
 
         # Differential Matrix
         DD_fnn = autograd.grad(D_fnn)
@@ -153,6 +157,10 @@ class PINN_vieja(torch.nn.Module): # Defino mi clase Pinn como una heredera de l
         y_trues = torch.zeros(pde.shape) #defino zeros pq quiero que la pde sea lo mas chica posible.
         y_trues=y_trues.float().to(device)
         #print(y_trues)
+
+
+
+        
         return self.loss_function(pde, y_trues)
 
     def loss(self, x_ic, y_ic, x_coloc):
