@@ -72,7 +72,7 @@ class PINN(torch.nn.Module):
         """
         Calculates the loss for the pde term for a single data entry (x,t)
         """
-        
+        # x, t --- >>> (x-R, x+R, 0.1) = int_noloc
         inp = xt.clone()
         inp.requires_grad = True
 
@@ -85,7 +85,7 @@ class PINN(torch.nn.Module):
         fnn_xx = Hf[0,0]
 
         # Residual
-        ret = fnn_t - fnn_xx
+        ret = fnn_t - fnn_xx #int_noloc
         return ret
 
     def loss_pde(self, X):
