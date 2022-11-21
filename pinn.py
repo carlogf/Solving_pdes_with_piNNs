@@ -109,12 +109,48 @@ class PINN(torch.nn.Module):
         y_aux = torch.zeros(ret.shape)
 
         return self.loss_function(ret, y_aux)
+
+
+    def loss_pde_autogradOnly(self,X):
+        inp = X.clone()
+        inp.requires_grad = True
+        
+        n = inp.shape[0] # equivalent to len(inp)
+
+        f = self.forward(inp)
+
+        # Gradient of f
+        df = autograd.grad(f, inp, 
+                           grad_outputs = torch.ones_like(f),
+                           create_graph = True)[0]
+        
+        
+        # Partial derivatives
+        df_x = df[:,0].reshape((n,1))
+        df_t = df[:,1].reshape((n,1))
+
+        # Gradient of f_x
+        ddf_x = autograd.grad(df_x, inp,
+                              grad_outputs = torch.ones_like(f),
+                              create_graph=True)[0]
+
+        # I dont use the second derivatives of f_t in this problem
+        # Gradient of f_t       
+        #ddf_t = autograd.grad(df_t, inp,
+        #                      grad_outputs = torch.ones_like(f),
+        #                      create_graph=True)[0]
+        
+        ret = ddf_x[:,0] - df_t
+
+        return self.loss_function(ret, torch.zeros_like(ret))
+
         
     def loss (self, X_ic, y_ic, X_bc, y_bc, X_coloc):
         l_ic = self.loss_ic(X_ic, y_ic)
         l_bc = self.loss_bc(X_bc, y_bc)
-        l_pde = self.loss_pde(X_coloc)
+        #l_pde = self.loss_pde(X_coloc)
 
+        l_pde = self.loss_pde_autogradOnly(X_coloc)
         return l_ic + l_bc + l_pde # aca hay lugar para poner parametros que escalen cada sumando. tipo lamda 1 2 y 3.
 
 
