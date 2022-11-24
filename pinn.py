@@ -15,7 +15,8 @@ class PINN(torch.nn.Module):
         self.layers = layers
 
         "Activation function"
-        self.activation = nn.Tanh() # Up until now it works with Tanh, we can change it to relu or something else
+        #self.activation = nn.Tanh() # Up until now it works with Tanh, we can change it to relu or something else
+        self.activation = nn.ReLU()
 
         "Loss Function"
         self.loss_function = nn.MSELoss(reduction = "mean") # This just sums the square of diffferences and divdes. Coudl ahve wrote it myself.
@@ -145,12 +146,13 @@ class PINN(torch.nn.Module):
         return self.loss_function(ret, torch.zeros_like(ret))
 
         
-    def loss (self, X_ic, y_ic, X_bc, y_bc, X_coloc):
+    def loss (self, X_ic, y_ic, X_bc, y_bc, X_coloc, lambda_ic = 1, lambda_bc = 1, lambda_coloc = 1):
         l_ic = self.loss_ic(X_ic, y_ic)
         l_bc = self.loss_bc(X_bc, y_bc)
         #l_pde = self.loss_pde(X_coloc)
 
         l_pde = self.loss_pde_autogradOnly(X_coloc)
-        return l_ic + l_bc + l_pde # aca hay lugar para poner parametros que escalen cada sumando. tipo lamda 1 2 y 3.
+
+        return lambda_ic * l_ic +  lambda_bc * l_bc + lambda_coloc * l_pde # aca hay lugar para poner parametros que escalen cada sumando. tipo lamda 1 2 y 3.
 
 
