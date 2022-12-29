@@ -15,8 +15,8 @@ class PINN(torch.nn.Module):
         self.layers = layers
 
         "Activation function"
-        #self.activation = nn.Tanh() # Up until now it works with Tanh, we can change it to relu or something else
-        self.activation = nn.ReLU()
+        self.activation = nn.Tanh() # Up until now it works with Tanh, we can change it to relu or something else
+        #self.activation = nn.ReLU()
 
         "Loss Function"
         self.loss_function = nn.MSELoss(reduction = "mean") # This just sums the square of diffferences and divdes. Coudl ahve wrote it myself.
